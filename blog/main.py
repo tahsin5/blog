@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from services import init_db
+from blog.services.startup import init_db
 
 app = FastAPI()
 

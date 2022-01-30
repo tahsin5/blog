@@ -13,7 +13,7 @@ class Database:
 		password, 
 		host, 
 		port,
-		table
+		table = None
 	):
 
 		self.user = user
@@ -57,10 +57,10 @@ class Database:
 		try:
 			if data == None:
 				self._cursor.execute(sql_query)
-				print( '-# ' + sql_query.as_string(self._connection) + ';\n' )
+				# print( '-# ' + sql_query.as_string(self._connection) + ';\n' )
 			else:
 				self._cursor.execute(sql_query, data)
-				print( '-# ' + sql_query.as_string(self._connection) % data + ';\n' )
+				# print( '-# ' + sql_query.as_string(self._connection) % data + ';\n' )
 		except (Exception, psycopg2.DatabaseError) as error:
 			raise Exception(f'ERROR: {error}')
 	
