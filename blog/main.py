@@ -11,5 +11,7 @@ async def root():
 
 @app.on_event("startup")
 async def startup_event():
-    init_db()
-    pass
+    try:
+        init_db()
+    except Exception as e:
+        raise Exception("Error with database")
