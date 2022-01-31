@@ -13,7 +13,8 @@ class Database:
 		password, 
 		host, 
 		port,
-		table = None
+		table = None,
+		primary_key = None
 	):
 
 		self.user = user
@@ -22,6 +23,7 @@ class Database:
 		self.port = port  
 		self.table = table
 		self.dbname = settings.DBNAME
+		self.primary_key = primary_key
 		self._conn = None
 		self._cursor = None
    
@@ -77,26 +79,95 @@ class Database:
    	# For each check if single item query or multiple
    	# Then separate function for each
 
-	def insert(self, columns, rows=None):
-		# Columns is a dictionary where keys are the column names and values are column type
+	def insert(self, **column_value):
 		insert_query  = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
             sql.Identifier(self.table),
-            sql.SQL(', ').join( map( sql.Identifier, columns ) ),
-            sql.SQL(', ').join(sql.Placeholder() * len(rows[0]))
+            sql.SQL(', ').join(map(sql.Identifier, column_value.keys())),
+            sql.SQL(', ').join(sql.Placeholder() * len(column_value.values()))
         )
-		if rows:
-			for row in rows:
-				row = tuple(row)
-				self.execute(insert_query, row)
+		values_to_insert = tuple(column_value.values())
+		self.execute(insert_query, values_to_insert)
+
+	def insert_many(self, columns, rows):
+		insert_query  = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
+			sql.Identifier(self.table),
+			sql.SQL(', ').join( map( sql.Identifier, columns ) ),
+			sql.SQL(', ').join(sql.Placeholder() * len(rows[0]))
+		)
+		for row in rows:
+			row = tuple(row)
+			self.execute(insert_query, row )
+	
+	def select(self, columns, primary_key = None):
+		
+		if primary_key == None:
+			select_query = sql.SQL("SELECT {} FROM {}").format(
+				sql.SQL(',').join(map(sql.Identifier, columns)),
+				sql.Identifier(self.table)
+			)
 		else:
-			tuple_to_insert = tuple(columns.values())
-			self.execute(insert_query, tuple_to_insert)
+			select_query = sql.SQL("SELECT {} FROM {} WHERE {} = {}").format(
+				sql.SQL(',').join(map(sql.Identifier, columns)),
+				sql.Identifier(self.table),
+				sql.Identifier(self.primary_key),
+				sql.Placeholder()
+			)
+		
+		self._execute(select_query, (primary_key,))
+		try:
+			selected = self._cursor.fetchall()
+		except psycopg2.ProgrammingError as error:
+			selected = '# ERROR: ' + str(error)
+		else:
+			print('-# ' + str(selected) + '\n')
+			return selected
+
+	def select_all(self, primary_key = None):
+		
+		if primary_key == None:
+			select_query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(self.table))
+			self.execute(select_query)
+		else:
+			select_query = sql.SQL("SELECT * FROM {} WHERE {} = {}").format(
+				sql.Identifier(self.table),
+				sql.Identifier(self.primary_key),
+				sql.Placeholder()
+			)
+			self._execute(select_query, (primary_key,))
+		try:
+			selected = self._cursor.fetchall()
+		except psycopg2.ProgrammingError as error:
+			selected = '# ERROR: ' + str(error)
+		else:
+			print('-# ' + str(selected) + '\n')
+			return selected
+
+	def update(self, columns, primary_key):
+		
+		columns, col_values = list(columns.keys()), list(columns.values())
+		update_query  = sql.SQL("UPDATE {} SET {} = {} WHERE {} = {}").format(
+            sql.Identifier(self.table),
+            sql.SQL(',').join(map(sql.Identifier, columns)),
+            sql.SQL(', ').join(sql.Placeholder() * len(col_values)),
+            sql.Identifier(self.primary_key),
+            sql.Placeholder()
+        )
+		placeholder_value = list(col_values)
+		placeholder_value.append(primary_key)
+
+		self.execute(update_query, (col_values, tuple(placeholder_value)))
 	
-	def select(self):
-		pass
-	
-	def update(self):
-		pass
-	
-	def delete(self):
-		pass
+	def delete(self, primary_key = None):
+		
+		if primary_key is None:
+			delete_query = sql.SQL("DELETE FROM {}").format(
+								   sql.Identifier(self.table))
+			self.execute(delete_query)
+		
+		else:
+			delete_query  = sql.SQL("DELETE FROM {} WHERE {} = {}").format(
+            	sql.Identifier(self.table),
+           		sql.Identifier(self.primary_key),
+            	sql.Placeholder()
+        	)
+			self.execute(delete_query, (primary_key,))
