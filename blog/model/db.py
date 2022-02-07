@@ -98,9 +98,9 @@ class Database:
 			row = tuple(row)
 			self.execute(insert_query, row )
 	
-	def select(self, columns, primary_key = None):
+	def select(self, columns, primary_key_val = None):
 		
-		if primary_key == None:
+		if primary_key_val == None:
 			select_query = sql.SQL("SELECT {} FROM {}").format(
 				sql.SQL(',').join(map(sql.Identifier, columns)),
 				sql.Identifier(self.table)
@@ -113,7 +113,7 @@ class Database:
 				sql.Placeholder()
 			)
 		
-		self._execute(select_query, (primary_key,))
+		self.execute(select_query, (primary_key_val,))
 		try:
 			selected = self._cursor.fetchall()
 		except psycopg2.ProgrammingError as error:
@@ -122,9 +122,9 @@ class Database:
 			print('-# ' + str(selected) + '\n')
 			return selected
 
-	def select_all(self, primary_key = None):
+	def select_all(self, primary_key_val = None):
 		
-		if primary_key == None:
+		if primary_key_val == None:
 			select_query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(self.table))
 			self.execute(select_query)
 		else:
@@ -133,7 +133,7 @@ class Database:
 				sql.Identifier(self.primary_key),
 				sql.Placeholder()
 			)
-			self._execute(select_query, (primary_key,))
+			self.execute(select_query, (primary_key_val,))
 		try:
 			selected = self._cursor.fetchall()
 		except psycopg2.ProgrammingError as error:
@@ -142,7 +142,7 @@ class Database:
 			print('-# ' + str(selected) + '\n')
 			return selected
 
-	def update(self, columns, primary_key):
+	def update(self, columns, primary_key_val):
 		
 		columns, col_values = list(columns.keys()), list(columns.values())
 		update_query  = sql.SQL("UPDATE {} SET {} = {} WHERE {} = {}").format(
@@ -153,13 +153,13 @@ class Database:
             sql.Placeholder()
         )
 		placeholder_value = list(col_values)
-		placeholder_value.append(primary_key)
+		placeholder_value.append(primary_key_val)
 
 		self.execute(update_query, (col_values, tuple(placeholder_value)))
 	
-	def delete(self, primary_key = None):
+	def delete(self, primary_key_val = None):
 		
-		if primary_key is None:
+		if primary_key_val is None:
 			delete_query = sql.SQL("DELETE FROM {}").format(
 								   sql.Identifier(self.table))
 			self.execute(delete_query)
@@ -170,4 +170,4 @@ class Database:
            		sql.Identifier(self.primary_key),
             	sql.Placeholder()
         	)
-			self.execute(delete_query, (primary_key,))
+			self.execute(delete_query, (primary_key_val,))

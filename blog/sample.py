@@ -55,13 +55,21 @@ table = 'post'
 # print(create_table_obj.init_tables()) 
 
 
-db_obj = Database(user, pwd, host, port, table)
-post_columns = {
-    'content': 'Hello World',
-    'links': 'http://localhost',
-    'title': 'Hello World',
-    'published_at': '1/31/2022',
-    'images': 'file_location' 
-}
+# db_obj = Database(user, pwd, host, port, table)
+# post_columns = {
+#     'content': 'Hello World',
+#     'links': 'http://localhost',
+#     'title': 'Hello World',
+#     'published_at': '1/31/2022',
+#     'images': 'file_location' 
+# }
+# db_obj.connect()
+# db_obj.insert(**post_columns)
+
+columns = ['content', 'links', 'title', 'published_at', 'images']
+prim_key = 'title'
+db_obj = Database(user, pwd, host, port, table, prim_key)
 db_obj.connect()
-db_obj.insert(**post_columns)
+primary_key_val = 'Hello World'
+res = db_obj.select(columns, primary_key_val)
+print(res[0])
