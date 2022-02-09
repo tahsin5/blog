@@ -66,6 +66,22 @@ table = 'post'
 # db_obj.connect()
 # db_obj.insert(**post_columns)
 
+# columns = ['content', 'links', 'title', 'published_at', 'images']
+# prim_key = 'title'
+# db_obj = Database(user, pwd, host, port, table, prim_key)
+# db_obj.connect()
+# primary_key_val = 'Hello World'
+# res = db_obj.select(columns, primary_key_val)
+# print(res[0])
+
+columns = ['content', 'links', 'title', 'published_at', 'images']
+prim_key = 'title'
+db_obj = Database(user, pwd, host, port, table, prim_key)
+db_obj.connect()
+primary_key_val = 'Hello World'
+res = db_obj.delete(primary_key_val)
+print(res[0])
+
 columns = ['content', 'links', 'title', 'published_at', 'images']
 prim_key = 'title'
 db_obj = Database(user, pwd, host, port, table, prim_key)

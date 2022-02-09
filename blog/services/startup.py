@@ -15,8 +15,9 @@ def init_db():
     try:
         create_table_obj = CreateTable(USER, PASSWORD, HOST, PORT)
         result = create_table_obj.init_tables()
+        return True, None
 
     except Exception as e:
         error_location = 'blog.services.startup: init_db'
         error_str = log_postgresql_exception(e, error_location)
-        raise Exception(error_str)
+        return False, error_str
