@@ -1,11 +1,13 @@
-from dynaconf import settings
+from blog.config.config import Settings
+
 from blog.util.log import log_postgresql_exception
 from blog.model.create_table import CreateTable
 
-HOST = settings.DBSERVER
-USER = settings.DBUSER
-PASSWORD = settings.DBPWD
-PORT = settings.DBPORT
+settings = Settings()
+HOST = settings.db_server
+USER = settings.db_user
+PASSWORD = settings.db_pwd
+PORT = settings.db_port
 
 
 def init_db():

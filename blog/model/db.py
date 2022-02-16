@@ -1,9 +1,10 @@
 import psycopg2
 import psycopg2.extras as extras
 import psycopg2.sql as sql
-from dynaconf import settings
 
-HOST = settings.DBSERVER
+from blog.config.config import Settings
+
+settings = Settings()
 
 class Database:
 
@@ -22,7 +23,7 @@ class Database:
 		self.host = host
 		self.port = port  
 		self.table = table
-		self.dbname = settings.DBNAME
+		self.dbname = settings.db_name
 		self.primary_key = primary_key
 		self._conn = None
 		self._cursor = None
@@ -96,7 +97,7 @@ class Database:
 		)
 		for row in rows:
 			row = tuple(row)
-			self.execute(insert_query, row )
+			self.execute(insert_query, row)
 	
 	def select(self, columns, primary_key_val = None):
 		
